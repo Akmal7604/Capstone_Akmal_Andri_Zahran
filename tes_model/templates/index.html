@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Recommendation System</title>
+</head>
+<body>
+    <h1>Food Recommendation System</h1>
+    <form id="inputForm">
+        <label for="calories">Calories:</label>
+        <input type="number" id="calories" required><br>
+        
+        <label for="protein_content">Protein Content:</label>
+        <input type="number" id="protein_content" required><br>
+        
+        <label for="carbohydrate_content">Carbohydrate Content:</label>
+        <input type="number" id="carbohydrate_content" required><br>
+        
+        <label for="cook_time">Cook Time:</label>
+        <input type="number" id="cook_time" required><br>
+        
+        <button type="submit">Get Recommendation</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('inputForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const response = await fetch('/recommend', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    calories: parseFloat(document.getElementById('calories').value),
+                    protein_content: parseFloat(document.getElementById('protein_content').value),
+                    carbohydrate_content: parseFloat(document.getElementById('carbohydrate_content').value),
+                    cook_time: parseFloat(document.getElementById('cook_time').value)
+                })
+            });
+
+            const result = await response.json();
+            document.getElementById('result').innerText = 'Score: ' + result['score'];
+        });
+    </script>
+</body>
+</html>
