@@ -1,14 +1,12 @@
-# app.py (FastAPI version)
-from typing import List
+from typing import List, Optional
 import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 import pickle
 import re
 import numpy as np
 
 # --- 1. Load the necessary pre-trained objects and data ---
-# (Keep this section largely the same, ensure paths are correct)
 try:
     loaded_model = pickle.load(open('xgb_model.pkl', 'rb'))
     with open('mlb.pkl', 'rb') as f:
@@ -38,18 +36,17 @@ try:
 
 except Exception as e:
     print(f"Error loading required files: {e}. Please ensure 'xgb_model.pkl', 'mlb.pkl', 'le.pkl', 'model_input_feature_columns.pkl' and 'recipes_new.csv' are in the correct directories.")
-    raise RuntimeError(f"Failed to load essential files: {e}") # Raise an error to stop app startup
+    raise RuntimeError(f"Failed to load essential files: {e}")
 
 # --- 2. Define the search_food_by_keywords function ---
-# (This function can remain largely the same)
 def search_food_by_keywords(df, keywords, target_calories, top_n=5):
     keywords = [k.lower() for k in keywords]
     temp_df = df.copy()
     temp_df['tags_cleaned'] = temp_df['tags'].copy()
     filtered_df = temp_df[temp_df['tags_cleaned'].apply(lambda x: any(k in x for k in keywords))].copy()
 
-    if filtered_df.empty:
-        return pd.DataFrame(columns=['food', 'tags', 'calories', 'pred_prob'])
+    if filtered_df.empty:        
+        return pd.DataFrame(columns=['RecipeId', 'food', 'tags', 'calories', 'pred_prob'])
 
     target_calorie_label = None
     if target_calories <= bins[0]:
@@ -66,7 +63,7 @@ def search_food_by_keywords(df, keywords, target_calories, top_n=5):
         target_calorie_bin_encoded = loaded_le.transform([target_calorie_label])[0]
     except ValueError:
         print(f"Error: Target calorie label '{target_calorie_label}' not found in loaded LabelEncoder classes.")
-        return pd.DataFrame(columns=['food', 'tags', 'calories', 'pred_prob'])
+        return pd.DataFrame(columns=['RecipeId', 'food', 'tags', 'calories', 'pred_prob'])
 
     filtered_keywords_encoded = loaded_mlb.transform(filtered_df['tags_cleaned'])
     filtered_keywords_df = pd.DataFrame(filtered_keywords_encoded, columns=loaded_mlb.classes_, index=filtered_df.index)
@@ -92,26 +89,23 @@ def search_food_by_keywords(df, keywords, target_calories, top_n=5):
 
     if target_calorie_bin_encoded >= pred_proba.shape[1]:
         print(f"Error: Encoded target calorie bin {target_calorie_bin_encoded} is out of bounds for model's prediction probabilities (num_classes={pred_proba.shape[1]}).")
-        return pd.DataFrame(columns=['food', 'tags', 'calories', 'pred_prob'])
+        return pd.DataFrame(columns=['RecipeId', 'food', 'tags', 'calories', 'pred_prob'])
 
     filtered_df['pred_prob'] = [prob[target_calorie_bin_encoded] for prob in pred_proba]
 
     filtered_df = filtered_df.sort_values(by='pred_prob', ascending=False)
 
-    return filtered_df[['Name', 'tags', 'Calories', 'pred_prob']].rename(
+    # *** MODIFICATION HERE: Include 'RecipeId' ***
+    return filtered_df[['RecipeId', 'Name', 'tags', 'Calories', 'pred_prob']].rename(
         columns={'Name': 'food'}
     ).head(top_n)
 
 # --- 3. Initialize FastAPI App ---
 app = FastAPI()
 
-# --- Define Pydantic Models for Request and Response ---
-class RecipeRequest(BaseModel):
-    keywords: List[str]
-    target_calories: float
-    top_n: int = 5
-
-class Recommendation(BaseModel):
+# --- Define Pydantic Models for Response ---
+class Recommendation(BaseModel):    
+    RecipeId: int # Or int, depending on your data type
     food: str
     tags: List[str]
     Calories: float
@@ -120,28 +114,34 @@ class Recommendation(BaseModel):
 class RecommendationsResponse(BaseModel):
     recommendations: List[Recommendation]
 
-# --- 4. Define API Endpoint with FastAPI Decorators ---
-@app.post("/recommend_recipes", response_model=RecommendationsResponse)
-async def recommend_recipes(request_data: RecipeRequest):
+# --- 4. Define API Endpoint with GET and Query Parameters ---
+@app.get("/recommend_recipes", response_model=RecommendationsResponse)
+async def recommend_recipes(
+    keywords: str = Query(..., description="Daftar kata kunci yang dipisahkan koma (contoh: 'high protein,asian,low calorie')"),
+    target_calories: float = Query(..., gt=0, description="Target jumlah kalori yang diinginkan (harus lebih dari 0)"),
+    top_n: Optional[int] = Query(5, ge=1, description="Jumlah rekomendasi teratas yang akan dikembalikan (default: 5, min: 1)")
+):
     """
-    Recommends recipes based on keywords and target calorie range.
+    Merekomendasikan resep berdasarkan kata kunci dan target kalori.
     """
     try:
+        parsed_keywords = [k.strip() for k in keywords.split(',') if k.strip()]
+        if not parsed_keywords:
+            raise HTTPException(status_code=400, detail="Parameter 'keywords' tidak boleh kosong.")
+
         recommendations_df = search_food_by_keywords(
-            data, request_data.keywords, request_data.target_calories, request_data.top_n
+            data, parsed_keywords, target_calories, top_n
         )
 
         if recommendations_df.empty:
             return {"recommendations": []}
         else:
-            # Convert DataFrame to list of dictionaries that match the Recommendation Pydantic model
             return {"recommendations": recommendations_df.to_dict(orient='records')}
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Terjadi kesalahan internal: {str(e)}")
 
-# --- 5. Run the FastAPI App ---
-# You don't run it with app.run() like Flask.
-# Save this file as `main.py` or `app.py`.
-# Then run from your terminal: `uvicorn main:app --reload` or `uvicorn app:app --reload`
-# Or if you used `fastapi dev` from the documentation, then `fastapi dev app.py` would also work.
+# --- 5. Jalankan Aplikasi FastAPI ---
+# Untuk menjalankan aplikasi, simpan file ini sebagai `app.py` atau `main.py`.
+# Kemudian di terminal, jalankan:
+# uvicorn app:app --reload --host 0.0.0.0 --port 8000
