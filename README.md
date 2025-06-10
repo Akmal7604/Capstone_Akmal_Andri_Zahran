@@ -13,7 +13,7 @@
 🔍 Sistem ini menggunakan **pendekatan berbasis konten**, yang berarti sistem menganalisis kandungan nutrisi, bahan, dan kata kunci resep untuk membuat rekomendasi. Pendekatan ini sangat efektif karena:
 * 🎯 Tidak memerlukan data dari pengguna lain untuk memulai.
 * 💡 Memberikan rekomendasi yang sangat relevan dengan pengguna individu.
-* ❄️ Membantu menghindari masalah "mulai dingin" (*cold start*) yang sering ditemukan dalam sistem penyaringan kolaboratif.
+* ❄️ Membantu menghindari masalah (*cold start*) yang sering ditemukan dalam sistem penyaringan kolaboratif.
 * 📝 Menawarkan transparansi dalam rekomendasinya.
 
 ### ⚠️ Tantangan yang Dihadapi
@@ -35,7 +35,7 @@ Kalkulori menawarkan fitur-fitur utama berikut melalui *endpoint* API-nya:
 * **🎚 Peringkat & Randomisasi Cerdas**: Memberi peringkat saran berdasarkan skor kecocokan kata kunci dan probabilitas kalori yang diprediksi, kemudian mengambil sampel secara acak dari kumpulan kandidat teratas untuk memastikan keragaman.
 
 ### 📅 Meal Plan
-* **🎯 Rencana Makan yang Dipersonalisasi**: Menghasilkan rencana makan sehari penuh (Sarapan, Makan Siang, Makan Malam, ditambah makanan tambahan opsional) berdasarkan **target total kalori** yang ditentukan.
+* **🎯 Meal Plan yang Dipersonalisasi**: Menghasilkan rencana makan sehari penuh (Sarapan, Makan Siang, Makan Malam, ditambah makanan tambahan opsional) berdasarkan **target total kalori** yang ditentukan.
 * **⚖️ Toleransi Kalori**: Memungkinkan persentase toleransi yang dapat dikonfigurasi di sekitar target kalori untuk menemukan kombinasi makanan yang sesuai.
 * **🏆 Pemilihan Berbasis Prioritas**: Resep diprioritaskan berdasarkan jenis makanan (Sarapan, Makan Siang, Makan Malam) dan kata kunci spesifik/umum untuk memastikan pilihan yang relevan.
 * **📋Output Resep Terperinci**: Setiap makanan dalam rencana menyertakan detail resep yang komprehensif seperti bahan, waktu memasak, dan rincian nutrisi lengkap.
@@ -50,7 +50,7 @@ Kalkulori menawarkan fitur-fitur utama berikut melalui *endpoint* API-nya:
 
 ### 🧹 Pemrosesan Data & Pelatihan Model
 
-Sistem ini menggunakan **kumpulan data Kaggle Food.com**, yang berisi lebih dari 500.000 resep.
+Sistem ini menggunakan berisi lebih dari 52.785 dataset.
 * **Pra-pemrosesan**: Resep dibersihkan, dan kata kunci di-binerkan menggunakan `MultiLabelBinarizer`. Fitur numerik seperti `Calories`, `ProteinContent`, dan `CarbohydrateContent` digunakan untuk pengelompokan dan prediksi.
 * **Pengelompokan Kalori**: Kalori dikategorikan ke dalam kelompok spesifik (misalnya, '0-200', '201-400', dll.) dan dikodekan menggunakan `LabelEncoder`.
 * **Prioritisasi Jenis Makanan**: Resep diberi `MealType` (Sarapan, Makan Siang, Makan Malam, Lain-lain) dan `MealPriority` berdasarkan kata kunci spesifik dan umum untuk memfasilitasi pembuatan rencana makan yang relevan.
