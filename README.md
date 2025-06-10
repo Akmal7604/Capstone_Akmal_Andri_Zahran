@@ -1,6 +1,6 @@
 <h1 align="center"><b>Kalkulori</b>: Sistem Rekomendasi Makanan</h1>
 <div align="center">
-  <img src="../../Capstone_New/Image/Logo_Kalkulori.png" width="300" alt="Logo Kalkulori" />
+  <img src="/Image/Logo_Kalkulori.png" width="300" alt="Logo Kalkulori" />
   <h4>Aplikasi web rekomendasi makanan menggunakan pendekatan berbasis konten dengan Scikit-Learn, FastAPI, dan TensorFlow.</h4>
 </div>
 
