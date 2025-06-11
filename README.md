@@ -1,7 +1,7 @@
 <h1 align="center"><b>Kalkulori</b>: Sistem Rekomendasi Makanan</h1>
 <div align="center">
   <img src="/Image/Logo_Kalkulori.png" width="300" alt="Logo Kalkulori" />
-  <h4>Aplikasi web rekomendasi makanan menggunakan pendekatan berbasis konten dengan Scikit-Learn, FastAPI, dan TensorFlow.</h4>
+  <h4>Aplikasi web rekomendasi makanan menggunakan pendekatan berbasis konten dengan TensorFlow, Scikit-Learn, dan FastAPI</h4>
 </div>
 
 ---
@@ -55,13 +55,13 @@ Sistem ini menggunakan berisi lebih dari 52.785 dataset.
 * **Pengelompokan Kalori**: Kalori dikategorikan ke dalam kelompok spesifik (misalnya, '0-200', '201-400', dll.) dan dikodekan menggunakan `LabelEncoder`.
 * **Prioritisasi Jenis Makanan**: Resep diberi `MealType` (Sarapan, Makan Siang, Makan Malam, Lain-lain) dan `MealPriority` berdasarkan kata kunci spesifik dan umum untuk memfasilitasi pembuatan rencana makan yang relevan.
 
-### 🤖 Model Meal Plan (`MealPlanGenerator`)
-* **Pengelompokan (*Clustering*)**: `MealPlanGenerator` menggunakan **pengelompokan KMeans** (dengan `StandardScaler` untuk fitur numerik) untuk mengelompokkan resep berdasarkan kandungan nutrisinya (Kalori, Protein, Karbohidrat). Ini membantu dalam memilih resep yang bervariasi dari kelompok yang berbeda untuk rencana makan.
-
 ### 🤖 Model Suggestion Meal (TensorFlow MLP)
 * **Tugas Klasifikasi**: Model ini memprediksi kelompok kalori resep berdasarkan kandungan nutrisi dan fitur kata kuncinya.
 * **Arsitektur**: **Multi-Layer Perceptron (MLP)** Sekuensial digunakan dengan aktivasi `relu` untuk lapisan tersembunyi dan `softmax` untuk lapisan keluaran guna memprediksi probabilitas di seluruh kelompok kalori.
 * **Pelatihan**: Dilatih menggunakan *loss* `SparseCategoricalCrossentropy` dan *optimizer* `Adam`, dengan bobot kelas untuk menangani potensi ketidakseimbangan kelas.
+
+### 🤖 Model Meal Plan (`MealPlanGenerator`)
+* **Pengelompokan (*Clustering*)**: `MealPlanGenerator` menggunakan **pengelompokan KMeans** (dengan `StandardScaler` untuk fitur numerik) untuk mengelompokkan resep berdasarkan kandungan nutrisinya (Kalori, Protein, Karbohidrat). Ini membantu dalam memilih resep yang bervariasi dari kelompok yang berbeda untuk rencana makan.
 
 ### 🚀 Deployment dengan AWS
 
